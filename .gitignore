@@ -1,3 +1,5 @@
 venv
 demo
 demo.ipynb
+.ipynb_checkpoints
+.main.ipynb.layout
