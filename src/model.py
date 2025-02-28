@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -141,8 +143,7 @@ def algorihtmsApplication(X, y, preprocessor):
     
     print("\nThird choice: Naive Bayes")
     
-    ## I used imbPip as before for the same problem
-    naiveBayesPipe = ImbPipeline(steps=[('preprocessor', preprocessor),('sampling', smote),('classifier', GaussianNB())])
+    naiveBayesPipe = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', GaussianNB())])
     naiveBayesPipe.fit(X_train, y_train)
     y_pred = naiveBayesPipe.predict(X_test)
     naiveBayesPipeAccuracy = accuracy_score(y_test, y_pred)
@@ -158,7 +159,10 @@ def algorihtmsApplication(X, y, preprocessor):
     
     print("\nFourth choice: Support Vector Machine")
     
-    SVMPipe = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', SVC(random_state=43))])
+    ## using the same pipeline as before but with the SVC, same problem 
+
+    
+    SVMPipe = ImbPipeline(steps=[('preprocessor', preprocessor),('sampling', smote),('classifier', SVC(random_state=43))])
     SVMPipe.fit(X_train, y_train)
     y_pred = SVMPipe.predict(X_test)
     SVMAccuracy = accuracy_score(y_test, y_pred)
