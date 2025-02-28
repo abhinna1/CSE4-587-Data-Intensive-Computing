@@ -1,18 +1,17 @@
-## We decided to use only "Violent Crime" e "Felony" as taget variables since they are the most important ones 
-## I've seen that these two categories are classified as violent crime and they cover the great majority of the dataset
-
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, f1_score, precision_score 
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier  
 from sklearn.tree import DecisionTreeClassifier  
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as ImbPipeline
 
 def cleanAndPrepareFeatures(file):
     arrest = pd.read_csv(file)
@@ -77,7 +76,7 @@ def cleanAndPrepareFeatures(file):
     return X, y, y2, preprocessor
     
 
-def algorihtmsApplication(X, y, preprocessor, crime):
+def algorihtmsApplication(X, y, preprocessor):
     
     
     ## Split the dataset in training and test set
@@ -92,7 +91,13 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     
     print("First choise: Logistic Regression")
     
-    logisticRegressionPipe = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', LogisticRegression(max_iter=800, random_state=42))])
+    ## WE have to apply smote because the dataset is unbalanced and we have to balance it, oterwise the model will give us a 0 precision and recall (and f1 as consequence since is the amrmonic mean between prec and recall)
+    ## https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html
+    
+    smote = SMOTE(random_state=43)
+    
+    # logisticRegressionPipe = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', LogisticRegression(max_iter=800, random_state=42))])
+    logisticRegressionPipe = ImbPipeline(steps=[('preprocessor', preprocessor),('sampling', smote),('classifier', LogisticRegression(max_iter=1000, random_state=43, class_weight='balanced'))])
     
     ## We have to train the model
     
@@ -102,10 +107,16 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     
     y_pred = logisticRegressionPipe.predict(X_test)
     
+    ## use all these metrics discussed during the lectures since as we know accuracy sometimes can be misleading
+    
     logisticRegAccuracy = accuracy_score(y_test, y_pred)
-    
-    ## We can rpint accuracy 
-    
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision) 
     print("Accuracy score: ", logisticRegAccuracy)
     
     print("\nSecond choice: K-Nearest Neighbors")
@@ -119,16 +130,29 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     y_pred = knnPipe.predict(X_test)
     
     knnAccuracy = accuracy_score(y_test, y_pred)
-    
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision)    
     print("Accuracy score: ", knnAccuracy)
     
     print("\nThird choice: Naive Bayes")
     
-    naiveBayesPipe = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', GaussianNB())])
+    ## I used imbPip as before for the same problem
+    naiveBayesPipe = ImbPipeline(steps=[('preprocessor', preprocessor),('sampling', smote),('classifier', GaussianNB())])
     naiveBayesPipe.fit(X_train, y_train)
     y_pred = naiveBayesPipe.predict(X_test)
     naiveBayesPipeAccuracy = accuracy_score(y_test, y_pred)
-    
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision) 
     print("Accuracy score: ", naiveBayesPipeAccuracy)
     
     
@@ -138,7 +162,13 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     SVMPipe.fit(X_train, y_train)
     y_pred = SVMPipe.predict(X_test)
     SVMAccuracy = accuracy_score(y_test, y_pred)
-    
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision) 
     print("Accuracy score: ", SVMAccuracy)
     
     ## NOT DISCUSSED IN CLASS 
@@ -152,6 +182,13 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     randomForestPipe.fit(X_train, y_train)
     y_pred = randomForestPipe.predict(X_test)
     randomForestAccuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision) 
     
     print("Accuracy score: ", randomForestAccuracy)
     
@@ -163,11 +200,21 @@ def algorihtmsApplication(X, y, preprocessor, crime):
     decisionTreePipe.fit(X_train, y_train)
     y_pred = decisionTreePipe.predict(X_test)
     decisionTreeAccuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    print("Recall score: ", recall)
+    print("F1 score: ", f1)
+    print("Precision score: ", precision) 
     
     print("Accuracy score: ", decisionTreeAccuracy)
     
      
 if __name__ == "__main__": 
+    ## IMPORTANT:
+    ## We decided to use only "Violent Crime" e "Felony" as taget variables since they are the most important ones 
+    ## I've seen that these two categories are classified as violent crime and they cover the great majority of the dataset
     
     file = 'dataset/NYPD_Arrest_Data__Year_to_Date_cleaned.csv'
     
@@ -181,9 +228,10 @@ if __name__ == "__main__":
     print("\nDataset cleaned :)")
     
     ## We have to apply the algorithm now, try before with Violent crime 
-    
-    algorihtmsApplication(X, y, preprocessor, "Violent Crime")
-    algorihtmsApplication(X, y2, preprocessor, "Felony")
+    print("\nApplying the algorithms for Violent Crime")
+    algorihtmsApplication(X, y, preprocessor)
+    print("\nApplying the algorithms for Felony")
+    algorihtmsApplication(X, y2, preprocessor)
     
     
     
